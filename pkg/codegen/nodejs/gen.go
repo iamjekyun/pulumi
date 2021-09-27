@@ -608,7 +608,7 @@ func (mod *modContext) genResource(w io.Writer, r *schema.Resource) error {
 		allOptionalInputs = true
 	}
 
-	// Write out callable constructor: We only emit a single public constructor, even though we use a private signature
+	// Writef out callable constructor: We only emit a single public constructor, even though we use a private signature
 	// as well as part of the implementation of `.get`. This is complicated slightly by the fact that, if there is no
 	// args type, we will emit a constructor lacking that parameter.
 	var argsFlags string
@@ -984,27 +984,21 @@ func (mod *modContext) genFunction(w io.Writer, fun *schema.Function) {
 }
 
 func functionArgsOptional(fun *schema.Function) bool {
-	argsOptional := true
 	if fun.Inputs != nil {
 		for _, p := range fun.Inputs.Properties {
 			if p.IsRequired() {
-				argsOptional = false
-				break
+				return false
 			}
 		}
 	}
-	return argsOptional
+	return true
 }
 
 func functionReturnType(fun *schema.Function) string {
-	name := tokenToFunctionName(fun.Token)
-	var retty string
 	if fun.Outputs == nil {
-		retty = "void"
-	} else {
-		retty = title(name) + "Result"
+		return "void"
 	}
-	return retty
+	return title(tokenToFunctionName(fun.Token)) + "Result"
 }
 
 // Generates `function ${fn}Output(..)` version lifted to work on
