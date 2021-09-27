@@ -324,7 +324,11 @@ func RunCommand(t *testing.T, name string, cwd string, exec string, args ...stri
 	RunCommandWithOptions(t, &integration.ProgramTestOptions{}, name, cwd, exec, args...)
 }
 
-func RunCommandWithOptions(t *testing.T, opts *integration.ProgramTestOptions, name string, cwd string, exec string, args ...string) {
+func RunCommandWithOptions(
+	t *testing.T,
+	opts *integration.ProgramTestOptions,
+	name string, cwd string, exec string, args ...string) {
+
 	exec, err := executable.FindExecutable(exec)
 	if err != nil {
 		t.Error(err)
