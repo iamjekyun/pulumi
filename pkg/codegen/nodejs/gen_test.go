@@ -8,6 +8,7 @@ import (
 
 	"github.com/pulumi/pulumi/pkg/v3/codegen/internal/test"
 	"github.com/pulumi/pulumi/pkg/v3/codegen/schema"
+	"github.com/pulumi/pulumi/pkg/v3/testing/integration"
 )
 
 func TestGeneratePackage(t *testing.T) {
@@ -42,7 +43,11 @@ func typeCheckGeneratedPackage(t *testing.T, pwd string) {
 
 	test.RunCommand(t, "yarn_link", pwd, "yarn", "link", "@pulumi/pulumi")
 	test.RunCommand(t, "yarn_install", pwd, "yarn", "install")
-	test.RunCommand(t, "tsc", pwd, "yarn", "run", "tsc", "--noEmit")
+	tscOptions := &integration.ProgramTestOptions{
+		// Avoid Out of Memory error on CI:
+		Env: []string{"NODE_OPTIONS=--max_old_space_size=4096"},
+	}
+	test.RunCommandWithOptions(t, tscOptions, "tsc", pwd, "yarn", "run", "tsc", "--noEmit")
 }
 
 // Runs unit tests against the generated code.
