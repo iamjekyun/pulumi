@@ -35,7 +35,7 @@ type sdkTest struct {
 }
 
 const (
-	// python = "python"
+	python = "python"
 	nodejs = "nodejs"
 	dotnet = "dotnet"
 	golang = "go"
@@ -150,6 +150,12 @@ var sdkTests = []sdkTest{
 	{
 		Directory:   "output-funcs",
 		Description: "Tests targeting the $fn_output helper code generation feature",
+	},
+	{
+		Directory:        "output-funcs-edgeorder",
+		Description:      "Regresses Node compilation issues on a subset of azure-native",
+		SkipCompileCheck: codegen.NewStringSet(dotnet, golang, python),
+		Skip:             codegen.NewStringSet("nodejs/test"),
 	},
 	{
 		Directory:   "cyclic-types",
