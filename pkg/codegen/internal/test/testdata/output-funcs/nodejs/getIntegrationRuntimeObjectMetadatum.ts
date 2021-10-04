@@ -55,7 +55,7 @@ export interface GetIntegrationRuntimeObjectMetadatumResult {
     /**
      * List of SSIS object metadata.
      */
-    readonly value?: outputs.SsisEnvironmentResponse | outputs.SsisFolderResponse | outputs.SsisPackageResponse | outputs.SsisProjectResponse[];
+    readonly value?: (outputs.SsisEnvironmentResponse | outputs.SsisFolderResponse | outputs.SsisPackageResponse | outputs.SsisProjectResponse)[];
 }
 
 export function getIntegrationRuntimeObjectMetadatumOutput(args: GetIntegrationRuntimeObjectMetadatumOutputArgs, opts?: pulumi.InvokeOptions): pulumi.Output<GetIntegrationRuntimeObjectMetadatumResult> {
