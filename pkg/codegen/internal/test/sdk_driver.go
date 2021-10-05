@@ -122,7 +122,7 @@ var sdkTests = []sdkTest{
 	{
 		Directory:   "simple-methods-schema-single-value-returns",
 		Description: "Simple schema with methods that return single values",
-		Skip:        codegen.NewStringSet("python/test"),
+		Skip:        codegen.NewStringSet("python/test", "nodejs/test"),
 	},
 	{
 		Directory:   "simple-yaml-schema",
@@ -170,7 +170,7 @@ var sdkTests = []sdkTest{
 	{
 		Directory:   "cyclic-types",
 		Description: "Cyclic object types",
-		Skip:        codegen.NewStringSet("python/test"),
+		Skip:        codegen.NewStringSet("python/test", "nodejs/test"),
 	},
 	{
 		Directory:   "regress-node-8110",

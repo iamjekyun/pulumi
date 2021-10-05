@@ -18,6 +18,8 @@ import * as assert from "assert";
 import * as pulumi from "@pulumi/pulumi";
 
 import { listStorageAccountKeysOutput, ListStorageAccountKeysResult } from "../listStorageAccountKeys";
+import * as amiIds from "../getAmiIds";
+import { GetAmiIdsFilterArgs } from "../types/input";
 
 pulumi.runtime.setMocks({
     newResource: function(_: pulumi.runtime.MockResourceArgs): {id: string, state: any} {
@@ -34,6 +36,16 @@ pulumi.runtime.setMocks({
                 }]
             };
         }
+
+        if (args.token == "mypkg::getAmiIds") {
+            return {
+                sortAscending: args.inputs.sortAscending,
+                nameRegex: args.inputs.nameRegex,
+                owners: args.inputs.owners,
+                id: JSON.stringify({filters: args.inputs.filters})
+            }
+        }
+
         throw new Error("call not implemented for " + args.token);
     },
 });
@@ -47,6 +59,52 @@ function checkTable(done: any, transform: (res: any) => any, table: {given: pulu
 }
 
 describe("output-funcs", () => {
+
+    it("getAmiIdsOutput", (done) => {
+
+        function filter(n: number): GetAmiIdsFilterArgs {
+            return {
+                name: pulumi.output(`filter-${n}-name`),
+                values: [
+                    pulumi.output(`filter-${n}-value-1`),
+                    pulumi.output(`filter-${n}-value-2`)
+                ],
+            }
+        }
+
+        const output = amiIds.getAmiIdsOutput({
+            owners: [pulumi.output("owner-1"),
+                     pulumi.output("owner-2")],
+            nameRegex: pulumi.output("[a-z]"),
+            sortAscending: pulumi.output(true),
+            filters: [filter(1), filter(2)],
+        });
+
+        checkOutput(done, output, (res: amiIds.GetAmiIdsResult) => {
+            assert.equal(res.sortAscending, true);
+            assert.equal(res.nameRegex, "[a-z]");
+            assert.deepStrictEqual(res.owners, ["owner-1", "owner-2"]);
+
+            assert.deepStrictEqual(JSON.parse(res.id), {
+                filters: [
+                    {
+                        name: 'filter-1-name',
+                        values: [
+                            'filter-1-value-1',
+                            'filter-1-value-2'
+                        ]
+                    },
+                    {
+                        name: 'filter-2-name',
+                        values: [
+                            'filter-2-value-1',
+                            'filter-2-value-2'
+                        ]
+                    },
+                ]
+            });
+        });
+    });
 
     it("listStorageAccountKeysOutput", (done) => {
         const output = listStorageAccountKeysOutput({

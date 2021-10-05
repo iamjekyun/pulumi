@@ -295,7 +295,8 @@ func (mod *modContext) typeAst(t schema.Type, input bool, constValue interface{}
 	case *schema.MapType:
 		return tstypes.StringMap(mod.typeAst(t.ElementType, input, constValue))
 	case *schema.ObjectType:
-		return tstypes.Identifier(mod.objectType(t.Package, mod.details(t), t.Token, input, t.IsInputShape(), false))
+		details := mod.details(t)
+		return tstypes.Identifier(mod.objectType(t.Package, details, t.Token, input, t.IsInputShape(), false))
 	case *schema.ResourceType:
 		return tstypes.Identifier(mod.resourceType(t))
 	case *schema.TokenType:
@@ -2140,9 +2141,11 @@ func generateModuleContextMap(tool string, pkg *schema.Package, extraFiles map[s
 
 			if f.NeedsOutputVersion() {
 				visitObjectTypes(f.Inputs.InputShape.Properties, func(t *schema.ObjectType) {
-					det := types.details(t)
-					det.inputType = true
-					det.usedInFunctionOutputVersionInputs = true
+					for _, mod := range []*modContext{types, getModFromToken(t.Token)} {
+						det := mod.details(t)
+						det.inputType = true
+						det.usedInFunctionOutputVersionInputs = true
+					}
 				})
 			}
 		}

@@ -94,7 +94,7 @@ export interface GetAmiIdsOutputArgs {
      * are several valid keys, for a full reference, check out
      * [describe-images in the AWS CLI reference][1].
      */
-    filters?: pulumi.Input<pulumi.Input<inputs.GetAmiIdsFilter>[]>;
+    filters?: pulumi.Input<pulumi.Input<inputs.GetAmiIdsFilterArgs>[]>;
     /**
      * A regex string to apply to the AMI list returned
      * by AWS. This allows more advanced filtering not supported from the AWS API.
