@@ -45,6 +45,8 @@ import (
 type typeDetails struct {
 	outputType bool
 	inputType  bool
+
+	usedInFunctionOutputVersionInputs bool // helps decide naming under the tfbridge20 flag
 }
 
 // title capitalizes the first rune in s.
@@ -193,7 +195,8 @@ func (mod *modContext) namingContext(pkg *schema.Package) (namingCtx *modContext
 	return
 }
 
-func (mod *modContext) objectType(pkg *schema.Package, tok string, input, args, enum bool) string {
+func (mod *modContext) objectType(pkg *schema.Package, details *typeDetails, tok string, input, args, enum bool) string {
+
 	root := "outputs."
 	if input {
 		root = "inputs."
@@ -214,9 +217,12 @@ func (mod *modContext) objectType(pkg *schema.Package, tok string, input, args, 
 		return "enums." + modName + title(name)
 	}
 
-	if args && mod.compatibility != tfbridge20 && mod.compatibility != kubernetes20 {
+	if args && input && details != nil && details.usedInFunctionOutputVersionInputs {
+		name += "Args"
+	} else if args && mod.compatibility != tfbridge20 && mod.compatibility != kubernetes20 {
 		name += "Args"
 	}
+
 	return pkgName + root + modName + title(name)
 }
 
@@ -283,13 +289,13 @@ func (mod *modContext) typeAst(t schema.Type, input bool, constValue interface{}
 		}
 		return tstypes.Identifier(fmt.Sprintf("pulumi.Input<%s>", typ))
 	case *schema.EnumType:
-		return tstypes.Identifier(mod.objectType(nil, t.Token, input, false, true))
+		return tstypes.Identifier(mod.objectType(nil, nil, t.Token, input, false, true))
 	case *schema.ArrayType:
 		return tstypes.Array(mod.typeAst(t.ElementType, input, constValue))
 	case *schema.MapType:
 		return tstypes.StringMap(mod.typeAst(t.ElementType, input, constValue))
 	case *schema.ObjectType:
-		return tstypes.Identifier(mod.objectType(t.Package, t.Token, input, t.IsInputShape(), false))
+		return tstypes.Identifier(mod.objectType(t.Package, mod.details(t), t.Token, input, t.IsInputShape(), false))
 	case *schema.ResourceType:
 		return tstypes.Identifier(mod.resourceType(t))
 	case *schema.TokenType:
@@ -1100,7 +1106,12 @@ func (mod *modContext) genType(w io.Writer, obj *schema.ObjectType, input bool, 
 	}
 
 	name := tokenToName(obj.Token)
-	if obj.IsInputShape() && mod.compatibility != tfbridge20 && mod.compatibility != kubernetes20 {
+
+	details := mod.details(obj)
+
+	if obj.IsInputShape() && input && details != nil && details.usedInFunctionOutputVersionInputs {
+		name += "Args"
+	} else if obj.IsInputShape() && mod.compatibility != tfbridge20 && mod.compatibility != kubernetes20 {
 		name += "Args"
 	}
 
@@ -2129,7 +2140,9 @@ func generateModuleContextMap(tool string, pkg *schema.Package, extraFiles map[s
 
 			if f.NeedsOutputVersion() {
 				visitObjectTypes(f.Inputs.InputShape.Properties, func(t *schema.ObjectType) {
-					types.details(t).inputType = true
+					det := types.details(t)
+					det.inputType = true
+					det.usedInFunctionOutputVersionInputs = true
 				})
 			}
 		}

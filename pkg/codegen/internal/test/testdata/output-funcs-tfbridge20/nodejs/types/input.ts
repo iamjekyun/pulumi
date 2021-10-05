@@ -9,7 +9,7 @@ export interface GetAmiIdsFilter {
     values: string[];
 }
 
-export interface GetAmiIdsFilter {
+export interface GetAmiIdsFilterArgs {
     name: pulumi.Input<string>;
     values: pulumi.Input<pulumi.Input<string>[]>;
 }
