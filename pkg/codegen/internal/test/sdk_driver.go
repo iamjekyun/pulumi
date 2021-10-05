@@ -166,7 +166,6 @@ var sdkTests = []sdkTest{
 		Directory:        "output-funcs-tfbridge20",
 		Description:      "Similar to output-funcs, but with compatibility: tfbridge20, to simulate pulumi-aws use case",
 		SkipCompileCheck: codegen.NewStringSet(dotnet, golang, python),
-		Skip:             codegen.NewStringSet("nodejs/test"),
 	},
 	{
 		Directory:   "cyclic-types",
